@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        footer {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+        }
+
+        /* Quiz Styles */
+        #quiz-container {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.5); /* Delicate border effect */
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        label {
+            cursor: pointer;
+        }
+
+        button {
+            margin: 10px auto; /* Center horizontally and vertically */
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        #answer-container {
+            display: none;
+            margin-top: 20px;
+            flex-grow: 1;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        /* Timer Styles */
+        #timer-container {
+            text-align: center;
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 0;
+        }
+
+        #timer {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        /* Font Size Adjustments */
+        #quiz-container p,
+        #quiz-container li,
+        #quiz-result {
+            font-size: 18px;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            #quiz-container {
+                max-width: 100%;
+            }
+
+            #quiz-result {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quiz</h1>
+    </header>
+    <div id="timer-container">
+        <p id="timer">30:00</p>
+    </div>
+    <div id="quiz-container">
+        <p>Question <span id="quiz-counter">1</span></p>
+        <p id="question">What is the capital of France?</p>
+        <ul id="options">
+            <li><label><input type="radio" name="answer" value="London"> London</label></li>
+            <li><label><input type="radio" name="answer" value="Madrid"> Madrid</label></li>
+            <li><label><input type="radio" name="answer" value="Paris"> Paris</label></li>
+            <li><label><input type="radio" name="answer" value="Berlin"> Berlin</label></li>
+        </ul>
+        <button id="next-button">Next</button>
+    </div>
+    <div id="answer-container" style="display: none;">
+        <h2>Answers</h2>
+        <ul>
+            <li>Question 1: Paris</li>
+            <!-- Add answers for remaining questions here -->
+        </ul>
+        <p>Total Right Answers: <span id="total-right-answers">0</span></p>
+        <p>Total Wrong Answers: <span id="total-wrong-answers">0</span></p>
+        <p>Quiz duration: <span id="quiz-duration">0 minutes and 0 seconds</span></p>
+        <p id="quiz-result"></p>
+    </div>
+    <footer>
+        &copy; 2023 Mujtaba Ahmad
+    </footer>
+
+
+
+    <script>
+        const quizQuestions = [
+        {
+                question: "What will come next in the following series?\n3, 6, 12, 24 .....................?",
+                options: ["44", "46", "48", "50"],
+                answer: "48"
+            },
+            {
+                question: "What will come next in the following series?\n2313, 2420, 2434, 2462, ................?",
+                options: ["2416", "2518", "2615", "2718"],
+                answer: "2518"
+            },
+            {
+                question: "What will come next in the following series?\n62, 31, 34, 17, 20, ..........?",
+                options: ["7", "8", "9", "10"],
+                answer: "10"
+            },
+            {
+                question: "What will come next in the following series?\n18, 13, 9, 6, 4,  ................?",
+                options: ["1", "2", "3", "4"],
+                answer: "3"
+            },
+            {
+                question: "What will come next in the following series?\n14, 30, 62,   .................?",
+                options: ["132", "124", "126", "98"],
+                answer: "126"
+            },
+            {
+                question: "SINGLE is to DOUBLE as ONE is to ...........?",
+                options: ["Zero", "Twice", "Ten", "Two"],
+                answer: "Twice"
+            },
+            {
+                question: "Sailor is to Air Force as Airmen is to ...........?",
+                options: ["Army", "Cobbler", "F.C", "Navy"],
+                answer: "Navy"
+            },
+            {
+                question: "Muree is too Cold as Jacka Abad is to ......................?",
+                options: ["Ice", "Snow", "Hot", "Stream"],
+                answer: "Hot"
+            },
+            {
+                question: "If Creep Is to CUP as Green is to ..................?",
+                options: ["Jung", "Grass", "Gape", "Gun"],
+                answer: "Gun"
+            },
+            {
+                question: "Hear is to Ear as CLOSE is to ..........?",
+                options: ["End", "Lose", "Begin", "Open"],
+                answer: "Lose"
+            },
+            {
+                question: "Complete the following series...............?\nB D F H J",
+                options: ["L", "K", "I", "M"],
+                answer: "L"
+            },
+            {
+                question: "Complete the following series...............?\nWXYZ XYZW ......?",
+                options: ["ZXWY", "YXWZ", "YZWX", "YWXZ"],
+                answer: "YZWX"
+            },
+            {
+                question: "If BOX is to 3 then BOXER is to __?",
+                options: ["5", "6", "7", "8"],
+                answer: "5"
+            },
+            {
+                question: "If STEP is coded as 3165 then PETS is coded as ...............?",
+                options: ["5613", "3165", "1635", "5163"],
+                answer: "5613"
+            },
+            {
+                question: "March is to 31/3 then JUNE is to ..............?",
+                options: ["30/4", "30/5", "30/6", "30/7"],
+                answer: "30/6"
+            },
+            {
+                question: "Which one is different from the rest?\nKarachi Kabal Dhaka Delhi",
+                options: ["Karachi", "Kabal", "Dhaka", "Delhi"],
+                answer: "Karachi"
+            },
+            {
+                question: "Which one is different from the rest?\nFebruary December Monday June",
+                options: ["February", "December", "Monday", "June"],
+                answer: "Monday"
+            },
+            {
+                question: "What letter comes Alphabetically in the word FLUCTUATION?",
+                options: ["N", "F", "U", "I"],
+                answer: "I"
+            },
+            {
+                question: "Which will come next in the following series?\n1 30 2 31 31 3?",
+                options: ["32", "34", "33", "35"],
+                answer: "32"
+            },
+            {
+                question: "Which will come next in the following series?\n5 B 10 D 15",
+                options: ["F", "H", "20", "25"],
+                answer: "F"
+            },
+            {
+                question: "Which will come next in the following series?\n63 3 44 0 91?",
+                options: ["8", "9", "4", "5"],
+                answer: "8"
+            },
+            {
+                question: "Which will come next in the following series?\n42 8 23 6 54?",
+                options: ["16", "18", "20", "22"],
+                answer: "20"
+            },
+            {
+                question: "December is to October as June is to ..........................?",
+                options: ["May", "April", "October", "August"],
+                answer: "April"
+            },
+            {
+                question: "Hot is to Burn then Cold is to?",
+                options: ["Stream", "Oven", "Ice", "Freeze"],
+                answer: "Freeze"
+            },
+            {
+                question: "Bird is to Cage as Prisoner is to .................?",
+                options: ["Lock", "Pigeon", "Cell", "Room"],
+                answer: "Cell"
+            },
+            {
+                question: "Cat is to Kitten as Dog is to .............................?",
+                options: ["Cub", "Dogi", "Ducking", "Puppy"],
+                answer: "Puppy"
+            },
+            {
+                question: "Fish is to Swimming as Snack is to ...................?",
+                options: ["Crawling", "Moving", "Jumping", "Dancing"],
+                answer: "Crawling"
+            },
+            {
+                question: "Heavy is to Light as Rough is to ............................?",
+                options: ["Soft", "Wood", "Coarse", "Smooth"],
+                answer: "Smooth"
+            },
+            {
+                question: "Mountain is too High as Train is to ......................?",
+                options: ["Speed", "Length", "Small", "Tall"],
+                answer: "Length"
+            },
+            {
+                question: "Hunger is to Food as Disease is to ....................?",
+                options: ["Medicine", "Weakness", "Sickness", "Water"],
+                answer: "Medicine"
+            },
+            {
+                question: "Reptile is to Snack?",
+                options: ["Women is to Girl", "Man is to Woman", "Son is to Daughter", "Woman is to Father"],
+                answer: "Women is to Girl"
+            },
+            {
+                question: "Mad is to Insane?",
+                options: ["Brave, Timid", "Healthy, Fat", "Red, Green", "Slim, Thin"],
+                answer: "Slim, Thin"
+            },
+            {
+                question: "Doctor: Nurse:: Follower: .........?",
+                options: ["Employer", "Worker", "Leader", "Manager"],
+                answer: "Leader"
+            },
+            {
+                question: "Wrist ::: Ankle:  ..........?",
+                options: ["Fingers", "Leg", "Knee", "Foot"],
+                answer: "Knee"
+            },
+            {
+                question: "Peacock: India:: Bear: ........?",
+                options: ["Russia", "Pakistan", "West Indies", "China"],
+                answer: "Russia"
+            },
+            {
+                question: "A Grandfather is always ...................... then his Daughter?",
+                options: ["Wiser", "Experienced", "Heavier", "Taller"],
+                answer: "Experienced"
+            },
+            {
+                question: "Which is the heavier in both, A pound of feather or a pound of Gold?",
+                options: ["Father", "Gold", "Neither", "Iron"],
+                answer: "Neither"
+            },
+            {
+                question: "It takes two minutes to boil an EGG. How much time does it take to boil 5 EGG together?",
+                options: ["2", "10", "15", "30"],
+                answer: "2"
+            },
+            {
+                question: "An electric train running from east to west with a speed of 80 KM / H what is the direction of smoke will go?",
+                options: ["East to west", "West to east", "South to West", "None of these"],
+                answer: "None of these"
+            },
+            {
+                question: "In 2 hours the minute hand of the cloak rotates through an angle of?",
+                options: ["360", "720", "60", "180"],
+                answer: "720"
+            },
+            {
+                question: "Forests are useful and become?",
+                options: ["They help in building the Economy", "Provide the picnic spot", "Make the country beautiful", "They are easy to grow"],
+                answer: "They help in building the Economy"
+            },
+            {
+                question: "The car has a mirror because?",
+                options: ["To see the cars coming backward", "To see the girls in the cars", "To see the different sights", "To see the cars which are ahead"],
+                answer: "To see the cars coming backward"
+            },
+            {
+                question: "We get an education because?",
+                options: ["To polish ourselves in every aspect", "To earn money to live in this word", "To get jobs in a good company / Place", "To show others that we have degrees"],
+                answer: "To polish ourselves in every aspect"
+            },
+            {
+                question: "Girls / Boys wear glasses because?",
+                options: ["They have poor eyesight", "They want to look smart", "They have to go outside", "They want to show off"],
+                answer: "They have poor eyesight"
+            },
+            {
+                question: "Why does the teacher go to School?",
+                options: ["Want to earn money", "To do his duty", "Both A & B", "To give Knowledge"],
+                answer: "To give Knowledge"
+            },
+            {
+                question: "Before Mount Everest was discovered which is the highest peak on earth?",
+                options: ["Mount Everest", "Mount Everest", "Mount Hinda", "Mount Mikleny"],
+                answer: "Mount Everest"
+            },
+            {
+                question: "If peacocks don't lay eggs then how are baby peacocks born?",
+                options: ["In labs", "Live birth", "Peahens have them", "They are born from older Peacocks"],
+                answer: "Peahens have them"
+            },
+            {
+                question: "How can a man go 9 Days without sleep?",
+                options: ["Magic", "Surgery", "It is Impossible", "By sleeping to Night"],
+                answer: "By sleeping to Night"
+            },
+            {
+                question: "Which of these colors is warm?",
+                options: ["Green", "Black", "Red", "Purple"],
+                answer: "Red"
+            },
+            {
+                question: "If the Coconut fall from a tree wind is blowing from the east. Where will the coconut land?",
+                options: ["To the east", "To the west", "To the ground", "It would not"],
+                answer: "To the ground"
+            },
+            {
+                question: "Free is to Imprison as Forgive is to _________.",
+                options: ["Accept", "Punish", "Accuse", "Condemn"],
+                answer: "Punish"
+            },
+            {
+                question: "What Will Come Next in Following Series. 20, 25, 23, 28, 26, 31, 29, 34 __?",
+                options: ["33", "43", "30", "32", "31"],
+                answer: "32"
+            },
+            {
+                question: "What Number Comes in this Series? 13 15 17 19 21 ___.",
+                options: ["23", "24", "20", "26"],
+                answer: "23"
+            },
+            {
+                question: "What Will Come Next in the Following Series? 17 35 72 147 __.",
+                options: ["298", "294", "892", "198"],
+                answer: "298"
+            },
+            {
+                question: "Which One is Out of the List?",
+                options: ["Buffalo", "Goat", "Cow", "Horse"],
+                answer: "Horse"
+            },
+            {
+                question: "What Will Come Next in the Following Series. E G X F X H J X I X K M X L X ?",
+                options: ["N + P", "N", "P", "O", "M"],
+                answer: "N + P"
+            },
+            {
+                question: "What is the Next Number? 62 31 34 17 20 _______?",
+                options: ["9", "10", "6", "8"],
+                answer: "10"
+            },
+            {
+                question: "Which Word is Out of the List?",
+                options: ["Far", "Hat", "Fad", "Kit"],
+                answer: "Kit"
+            },
+            {
+                question: "Finger is to Elbow as Toe is to ______.",
+                options: ["Foot", "Arm", "Ankle", "Knee"],
+                answer: "Knee"
+            },
+            {
+                question: "Fly is to Aeroplane as Sail is to _______.",
+                options: ["Ship", "Ocean", "Sea", "Cabin"],
+                answer: "Ship"
+            },
+            {
+                question: "Stranger spot out below?",
+                options: ["Godly", "Holy", "Atheist", "Pious"],
+                answer: "Atheist"
+            },
+            {
+                question: "Which Word is Out of the List?",
+                options: ["Cure", "Failure", "Examination", "Student"],
+                answer: "Cure"
+            },
+            {
+                question: "Wag is to Dullard as Idiot is to ____________---?",
+                options: ["Clever", "Healthy", "Heartly", "Foolish"],
+                answer: "Clever"
+            },
+            {
+                question: "What Will Come Next In Following List ? 4 12 36 108 __.",
+                options: ["424", "124", "324", "224"],
+                answer: "324"
+            },
+            {
+                question: "If BOX is Coded as CDPQYZ, How would you write COAT in Code -----------?",
+                options: ["UVDEPQBC", "PQDEBCUV", "DEPQBCUV", "BCPQDEUV"],
+                answer: "DEPQBCUV"
+            },
+            {
+                question: "My Mother is the Sister of your Brother, What relation am I to you?",
+                options: ["Uncle", "Brother", "Nephew", "Cousin"],
+                answer: "Nephew"
+            },
+            {
+                question: "What will come Next? 16 12 28 8 4 ___?",
+                options: ["2", "4", "12", "40"],
+                answer: "12"
+            },
+            {
+                question: "A is the Father of B but B is not A's Son then What is the Relationship Between B and A?",
+                options: ["Uncle", "Father", "Daughter", "Cousin"],
+                answer: "Daughter"
+            },
+            {
+                question: "If Sunday Dawned three Days before Yesterday what day will dawn two days after tomorrow?",
+                options: ["Tuesday", "Monday", "Sunday", "Saturday"],
+                answer: "Tuesday"
+            },
+            {
+                question: "Which Word is From Out of the List?",
+                options: ["Arc", "Diameter", "Radius", "Diagonal"],
+                answer: "Diagonal"
+            },
+            {
+                question: "Write the Next Two Numbers in this Series? 5, 3, 6, 4, 7, 5, 8, 6, __?__, __?",
+                options: ["9, 5", "7, 5", "8, 10", "9, 7"],
+                answer: "9, 7"
+            },
+            {
+                question: "Essence is to Flower as ________is to Oven ?",
+                options: ["Vapour", "Steam", "Ice", "Heat"],
+                answer: "Heat"
+            },
+            {
+                question: "What Will Comes Next in the Following Series of Number? 10 20 30 40 50 __?",
+                options: ["65", "60", "70", "55"],
+                answer: "60"
+            },
+            {
+                question: "What Will Come Next in the Following Series? 10 50 250 1250 __?__",
+                options: ["6250", "3750", "5012", "2500", "5169"],
+                answer: "6250"
+            },
+            {
+                question: "Meat is to Vegetarian as _____________________ is to Teetotaler?",
+                options: ["Liquor", "Vegetable", "Mutton", "Fruit"],
+                answer: "Liquor"
+            },
+            {
+    question: "What comes next in the following series: 12, 18, 24, 30, ____?",
+    options: ["36", "42", "48", "54"],
+    answer: "42"
+},
+{
+    question: "If CAT is coded as 312, how would you code DOG?",
+    options: ["416", "514", "410", "613"],
+    answer: "416"
+},
+{
+    question: "If ZEBRA is to ARBEZ, how is LION coded?",
+    options: ["NOIL", "INOL", "OINL", "LINO"],
+    answer: "LINO"
+},
+{
+    question: "Which of the following numbers is the odd one out?",
+    options: ["2", "3", "5", "7"],
+    answer: "2"
+},
+{
+    question: "What is the next letter in this series: A, C, E, G, ____?",
+    options: ["I", "H", "F", "J"],
+    answer: "I"
+},
+{
+    question: "If TODAY is Monday, what day will it be in 6 days?",
+    options: ["Wednesday", "Thursday", "Friday", "Saturday"],
+    answer: "Sunday"
+},
+{
+    question: "What comes next in the following series: 5, 10, 20, 40, ____?",
+    options: ["60", "80", "100", "120"],
+    answer: "80"
+},
+{
+    question: "If APPLE is to 50, how is BANANA coded?",
+    options: ["45", "55", "60", "65"],
+    answer: "55"
+},
+{
+    question: "Which planet is closest to the Sun?",
+    options: ["Earth", "Venus", "Mars", "Jupiter"],
+    answer: "Venus"
+},
+{
+    question: "What is the capital of France?",
+    options: ["Berlin", "London", "Madrid", "Paris"],
+    answer: "Paris"
+},
+{
+    question: "Which gas do plants absorb from the atmosphere?",
+    options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
+    answer: "Carbon Dioxide"
+},
+{
+    question: "What is the chemical symbol for gold?",
+    options: ["Go", "Au", "Ag", "Ge"],
+    answer: "Au"
+},
+{
+    question: "What is the largest mammal in the world?",
+    options: ["Elephant", "Giraffe", "Whale Shark", "Blue Whale"],
+    answer: "Blue Whale"
+},
+{
+    question: "Which country is known as the Land of the Rising Sun?",
+    options: ["China", "South Korea", "Japan", "Vietnam"],
+    answer: "Japan"
+},
+{
+    question: "How many continents are there on Earth?",
+    options: ["4", "5", "6", "7"],
+    answer: "7"
+},
+{
+    question: "What is the smallest prime number?",
+    options: ["0", "1", "2", "3"],
+    answer: "2"
+},
+{
+    question: "What is the largest organ in the human body?",
+    options: ["Brain", "Liver", "Heart", "Skin"],
+    answer: "Skin"
+},
+{
+    question: "Which gas do humans breathe out?",
+    options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
+    answer: "Carbon Dioxide"
+},
+{
+    question: "What is the tallest mountain in the world?",
+    options: ["Mount Everest", "K2", "Kilimanjaro", "Matterhorn"],
+    answer: "Mount Everest"
+},
+{
+    question: "What is the chemical symbol for water?",
+    options: ["H2O", "CO2", "O2", "NaCl"],
+    answer: "H2O"
+},
+{
+    question: "Which planet is known as the Red Planet?",
+    options: ["Venus", "Mars", "Jupiter", "Saturn"],
+    answer: "Mars"
+},
+{
+    question: "What is the currency of Japan?",
+    options: ["Dollar", "Euro", "Yen", "Pound"],
+    answer: "Yen"
+},
+{
+    question: "What is the largest desert in the world?",
+    options: ["Gobi Desert", "Sahara Desert", "Atacama Desert", "Arabian Desert"],
+    answer: "Sahara Desert"
+},
+{
+    question: "Which gas is responsible for the greenhouse effect?",
+    options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Methane"],
+    answer: "Carbon Dioxide"
+},
+        ];
+
+        let currentQuestionIndex = 0;
+        let totalRightAnswers = 0;
+        let totalWrongAnswers = 0;
+        const quizContainer = document.getElementById("quiz-container");
+        const nextButton = document.getElementById("next-button");
+        const answerContainer = document.getElementById("answer-container");
+        const timerElement = document.getElementById("timer");
+        const quizResultElement = document.getElementById("quiz-result");
+        let quizStartTime;
+        let timer;
+
+        // Function to display the countdown timer
+        function displayTimer() {
+            const now = new Date().getTime();
+            const timeRemaining = Math.max(0, Math.floor((quizStartTime + 30 * 60 * 1000 - now) / 1000));
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerElement.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+            if (timeRemaining === 0) {
+                displayAnswers();
+            }
+        }
+
+        // Function to display the current question
+        function displayQuestion() {
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+
+            // Display the current question and options in the quiz container
+            document.getElementById("question").textContent = currentQuestion.question;
+            const optionsList = document.getElementById("options");
+            optionsList.innerHTML = "";
+            currentQuestion.options.forEach((option) => {
+                const li = document.createElement("li");
+                const label = document.createElement("label");
+                label.innerHTML = `<input type="radio" name="answer" value="${option}"> ${option}`;
+                li.appendChild(label);
+                optionsList.appendChild(li);
+            });
+
+            // Update the quiz counter
+            document.getElementById("quiz-counter").textContent = currentQuestionIndex + 1;
+
+            // Check if this is the last question
+            if (currentQuestionIndex === quizQuestions.length - 1) {
+                nextButton.textContent = "Finish";
+            }
+        }
+
+        // Function to check the answer and go to the next question
+        function checkAnswerAndMoveNext() {
+            const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+            if (selectedAnswer) {
+                const userAnswer = selectedAnswer.value;
+                const correctAnswer = quizQuestions[currentQuestionIndex].answer;
+                if (userAnswer === correctAnswer) {
+                    totalRightAnswers++;
+                } else {
+                    totalWrongAnswers++;
+                }
+
+                currentQuestionIndex++;
+
+                if (currentQuestionIndex < quizQuestions.length) {
+                    // Display the next question
+                    displayQuestion();
+                } else {
+                    // Quiz has ended, display the answers
+                    displayAnswers();
+                }
+            }
+        }
+
+        // Function to display the correct answers at the end
+        function displayAnswers() {
+            // Display the correct answers in the answer container
+            answerContainer.style.display = "block";
+            const answersList = document.querySelector("#answer-container ul");
+            answersList.innerHTML = "";
+            quizQuestions.forEach((question, index) => {
+                answersList.innerHTML += `<li>Question ${index + 1}: ${question.answer}</li>`;
+            });
+
+            // Calculate quiz duration
+            const quizEndTime = new Date().getTime();
+            const quizDuration = (quizEndTime - quizStartTime) / 1000; // in seconds
+
+            // Display quiz duration
+            document.getElementById("quiz-duration").textContent = `${Math.floor(quizDuration / 60)} minutes and ${quizDuration % 60} seconds`;
+
+            // Display total right and wrong answers
+            document.getElementById("total-right-answers").textContent = totalRightAnswers;
+            document.getElementById("total-wrong-answers").textContent = totalWrongAnswers;
+
+            // Display quiz result
+            if (totalRightAnswers >= 50) {
+                quizResultElement.textContent = "Congratulations!";
+            } else {
+                quizResultElement.textContent = "Try Again!";
+            }
+
+            // Stop the timer
+            clearInterval(timer);
+        }
+
+        // Initialize the quiz
+        displayQuestion();
+
+        // Start the timer when the quiz begins
+        quizStartTime = new Date().getTime();
+        displayTimer(); // Initial display of timer
+
+        // Update the timer every second
+        timer = setInterval(displayTimer, 1000);
+
+        // Add an event listener for the "Next" button
+        nextButton.addEventListener("click", checkAnswerAndMoveNext);
+    </script>
+</body>
+</html>
